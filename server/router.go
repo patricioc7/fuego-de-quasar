@@ -10,15 +10,15 @@ func NewRouter() *gin.Engine {
 
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-	//adding jwt
-	//router.Use(middlewares.AuthMiddleware())
 
 	v1 := router.Group("api/v1")
 	{
 
 		quasarController := new(controllers.QuasarController)
 
-		v1.POST("/secretmessage", quasarController.Test)
+		v1.POST("/topsecret/", quasarController.Test)
+		v1.POST("/topsecret_split/:satellite_name", quasarController.SplitPost)
+		v1.GET("/topsecret_split/", quasarController.SplitGet)
 
 	}
 

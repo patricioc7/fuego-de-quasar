@@ -1,6 +1,7 @@
 package main
 
 import (
+	"goCore/cache"
 	"goCore/config"
 	"goCore/db"
 	"goCore/server"
@@ -9,6 +10,7 @@ import (
 func main(){
 	config.InitFlagConfig()
 	db.InitConnection(&config.Fconfig)
+	cache.InitCache()
 	server.Init()
 
 }
