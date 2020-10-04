@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"quasarFire/cache"
 	"quasarFire/models"
 )
@@ -11,23 +10,31 @@ type TopSecretService struct{}
 var locationService LocationService
 var messageService MessageService
 
+
 func(l TopSecretService) ConstructResponse(topSecret models.TopSecret) (*models.TopSecretResponse, error){
 
 	distancesArray, error := locationService.GetFloatArrayFromTopSecret(topSecret)
 	if error == nil {
 
-		x, y := locationService.GetLocation(distancesArray[0], distancesArray[1], distancesArray[2])
-		secret := messageService.GetMessageFromTopSecret(topSecret)
-		if secret != "" && y != nil && x != nil {
-			position := models.Position{
-				X: *x,
-				Y: *y,
-			}
+		//Using GoRoutines here is unnecessary, but is fun to use it:
+		positionChannel := make(chan *models.Position,  2)
+		secretMessageChannel := make(chan string, 1)
+		go func() {
+			x, y := locationService.GetLocation(distancesArray[0], distancesArray[1], distancesArray[2])
+			positionChannel <- &models.Position{X: *x, Y: *y}
+		}()
+		go func() {
+			secret := messageService.GetMessageFromTopSecret(topSecret)
+			secretMessageChannel <- secret
+		}()
 
-			secretResponse := models.TopSecretResponse{Position: position, Message: secret}
+		position := <-positionChannel
+		secret := <- secretMessageChannel
+		if secret != "" && position != nil {
+
+			secretResponse := models.TopSecretResponse{Position: *position, Message: secret}
 			return &secretResponse, nil
 		}else{
-			fmt.Print("AAAAAAAAAAAAAaa")
 			error = errors.New("could not calculate position or message with provided info")
 		}
 
