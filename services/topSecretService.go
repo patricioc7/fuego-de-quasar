@@ -63,9 +63,9 @@ func(l TopSecretService) ConstructResponseFromSplit() (**models.TopSecretRespons
 
 	if kenobiFound  && skywalkerFound && satoFound{
 
-		parsedKenobi := kenobiRequest.(models.TopSecretSplit)
-		parsedSkywalker := skywalkerRequest.(models.TopSecretSplit)
-		parsedSato := satoRequest.(models.TopSecretSplit)
+		parsedKenobi := kenobiRequest.(*models.TopSecretSplit)
+		parsedSkywalker := skywalkerRequest.(*models.TopSecretSplit)
+		parsedSato := satoRequest.(*models.TopSecretSplit)
 
 		kenobiSatellite := models.Satellite{Name: "kenobi", Distance: parsedKenobi.Distance, Message: parsedKenobi.Message}
 		skywalkerSatellite := models.Satellite{Name: "skywalker", Distance: parsedSkywalker.Distance, Message: parsedSkywalker.Message}
@@ -82,5 +82,5 @@ func(l TopSecretService) ConstructResponseFromSplit() (**models.TopSecretRespons
 		return &response, nil
 
 	}
-	return nil, nil
+	return nil, errors.New("not enough info yet")
 }
