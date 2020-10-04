@@ -1,8 +1,8 @@
 package services
 
 import (
-	"goCore/cache"
-	"goCore/models"
+	"quasarFire/cache"
+	"quasarFire/models"
 )
 
 type TopSecretService struct{}

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"goCore/cache"
-	"goCore/server"
+	"quasarFire/cache"
+	"quasarFire/server"
 )
 
 func main(){

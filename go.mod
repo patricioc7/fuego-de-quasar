@@ -1,4 +1,4 @@
-module goCore
+module quasarFire
 
 go 1.15
 

@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"goCore/controllers"
+	"quasarFire/controllers"
 )
 
 func NewRouter() *gin.Engine {

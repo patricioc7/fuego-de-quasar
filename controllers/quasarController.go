@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"goCore/models"
-	"goCore/services"
+	"quasarFire/models"
+	"quasarFire/services"
 )
 
 type QuasarController struct{}
