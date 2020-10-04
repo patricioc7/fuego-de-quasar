@@ -1,6 +1,8 @@
 package services
 
 import (
+	"errors"
+	"fmt"
 	"quasarFire/cache"
 	"quasarFire/models"
 )
@@ -9,26 +11,44 @@ type TopSecretService struct{}
 var locationService LocationService
 var messageService MessageService
 
-func(l TopSecretService) ConstructResponse(topSecret models.TopSecret) (response models.TopSecretResponse){
-	distancesArray := locationService.GetFloatArrayFromTopSecret(topSecret)
-	x, y := locationService.GetLocation(distancesArray[0], distancesArray[1], distancesArray[2])
-	secret := messageService.GetMessageFromTopSecret(topSecret)
+func(l TopSecretService) ConstructResponse(topSecret models.TopSecret) (*models.TopSecretResponse, error){
 
-	position := models.Position{
-		X: x,
-		Y: y,
+	distancesArray, error := locationService.GetFloatArrayFromTopSecret(topSecret)
+	if error == nil {
+
+		x, y := locationService.GetLocation(distancesArray[0], distancesArray[1], distancesArray[2])
+		secret := messageService.GetMessageFromTopSecret(topSecret)
+		if secret != "" && y != nil && x != nil {
+			position := models.Position{
+				X: *x,
+				Y: *y,
+			}
+
+			secretResponse := models.TopSecretResponse{Position: position, Message: secret}
+			return &secretResponse, nil
+		}else{
+			fmt.Print("AAAAAAAAAAAAAaa")
+			error = errors.New("could not calculate position or message with provided info")
+		}
+
 	}
-	secretResponse := models.TopSecretResponse{Position: position, Message: secret}
+	if error == nil {
+		error = errors.New("could not calculate position or message with provided info")
+	}
+	return nil, error
 
-	return secretResponse
 }
 
-func(l TopSecretService) SaveTopSecretSplitToCache(topSecret models.TopSecretSplit, name string){
+func(l TopSecretService) SaveTopSecretSplitToCache(topSecret *models.TopSecretSplit, name string) (saved bool)  {
+	if topSecret != nil {
+		cache.SetValue(name, topSecret)
+		return true
+	}
+	return false
 
-	cache.SetValue(name, topSecret)
 }
 
-func(l TopSecretService) ConstructResponseFromSplit() *models.TopSecretResponse {
+func(l TopSecretService) ConstructResponseFromSplit() (**models.TopSecretResponse, error) {
 
 	kenobiRequest, kenobiFound := cache.GetValue("kenobi")
 	skywalkerRequest, skywalkerFound := cache.GetValue("skywalker")
@@ -48,9 +68,12 @@ func(l TopSecretService) ConstructResponseFromSplit() *models.TopSecretResponse 
 
 		topSecretReadyToProcess := models.TopSecret{Satellites: satellites}
 
-		response := l.ConstructResponse(topSecretReadyToProcess)
-		return &response
+		response, error := l.ConstructResponse(topSecretReadyToProcess)
+		if error != nil {
+			return nil, error
+		}
+		return &response, nil
 
 	}
-	return nil
+	return nil, nil
 }

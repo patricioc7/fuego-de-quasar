@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"quasarFire/models"
 	"quasarFire/services"
@@ -12,15 +13,18 @@ var locationService services.LocationService
 var messageService services.MessageService
 var topSecretService services.TopSecretService
 
-func (u QuasarController) Test(c *gin.Context) {
+func (u QuasarController) FullPost(c *gin.Context) {
 	topSecret := models.TopSecret{}
 	c.BindJSON(&topSecret)
 
-	response := topSecretService.ConstructResponse(topSecret)
+	response, error := topSecretService.ConstructResponse(topSecret)
+	fmt.Print(error)
+	if error == nil {
+		c.JSON(200, response)
+	}else{
+		c.JSON(400, gin.H{"error": error.Error()})
+	}
 
-	//handle errors
-
-	c.JSON(200, response)
 	return
 }
 
@@ -29,11 +33,15 @@ func (u QuasarController) SplitPost(c *gin.Context) {
 	c.BindJSON(&topSecret)
 	name := c.Param("satellite_name")
 
-	topSecretService.SaveTopSecretSplitToCache(topSecret, name)
+	saved := topSecretService.SaveTopSecretSplitToCache(&topSecret, name)
 
-	//handle errors
 
-	c.JSON(201, "Saved")
+	if saved {
+		c.JSON(201, "Saved")
+
+	}else{
+		c.JSON(400, gin.H{"error": "bad request"})
+	}
 	return
 }
 
@@ -41,12 +49,12 @@ func (u QuasarController) SplitGet(c *gin.Context) {
 	topSecret := models.TopSecret{}
 	c.BindJSON(&topSecret)
 
-	response := topSecretService.ConstructResponseFromSplit()
+	response, error := topSecretService.ConstructResponseFromSplit()
 
-	if response != nil {
+	if error == nil {
 		c.JSON(200, response)
 	}else{
-		c.JSON(428, "Not enough info yet")
+		c.JSON(428, gin.H{"error": error.Error()})
 	}
 	return
 }
