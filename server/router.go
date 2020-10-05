@@ -10,7 +10,7 @@ func NewRouter() *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	v1 := router.Group("api/v1")
+	v1 := router.Group("")
 	{
 
 		quasarController := new(controllers.QuasarController)
