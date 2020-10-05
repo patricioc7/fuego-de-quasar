@@ -35,19 +35,19 @@ func (l LocationService) GetLocation(distances ...float32) (x, y *float32) {
 	distanceSkywalker := float64(distances[1])
 	distanceSato := float64(distances[2])
 
-	EPSILON := 0.01
+	const EPSILON = 0.01
 
 	//kenobi
-	var xPositionKenobi float64 = -500
-	var yPositionKenobi float64 = -200
+	const xPositionKenobi float64 = -500
+	const yPositionKenobi float64 = -200
 
 	//skywalker
-	var xPositionSkywalker float64 = 100
-	var yPositionSkywalker float64 = -100
+	const xPositionSkywalker float64 = 100
+	const yPositionSkywalker float64 = -100
 
 	//sato
-	var xPositionSato float64 = 500
-	var yPositionSato float64 = 100
+	const xPositionSato float64 = 500
+	const yPositionSato float64 = 100
 
 	var intersectionPointsLineAndCentersLineDisntance, xOffset, yOffset float64
 	var xIntersectionPointsLineAndCentersLine, yIntersectionPointsLineAndCentersLine float64
