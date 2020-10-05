@@ -2,9 +2,8 @@ package services
 
 import (
 	"errors"
-	"fmt"
-	"quasarFire/models"
 	"math"
+	"quasarFire/models"
 )
 type LocationService struct{}
 
@@ -31,6 +30,7 @@ func(l LocationService) GetFloatArrayFromTopSecret(topSecret models.TopSecret) (
 
 func (l LocationService) GetLocation(distances ...float32) (x, y *float32) {
 
+
 	distanceKenobi := float64(distances[0])
 	distanceSkywalker := float64(distances[1])
 	distanceSato := float64(distances[2])
@@ -38,54 +38,83 @@ func (l LocationService) GetLocation(distances ...float32) (x, y *float32) {
 	EPSILON := 0.01
 
 	//kenobi
-	var xKenobi float64 = -500
-	var yKenobi float64 = -200
+	var xPositionKenobi float64 = -500
+	var yPositionKenobi float64 = -200
 
 	//skywalker
-	var xSkywalker float64 = 100
-	var ySkywalker float64 = -100
+	var xPositionSkywalker float64 = 100
+	var yPositionSkywalker float64 = -100
 
 	//sato
-	var xSato float64 = 500
-	var ySato float64 = 100
+	var xPositionSato float64 = 500
+	var yPositionSato float64 = 100
 
-	distanceXSkywalkerKenobi := xSkywalker - xKenobi
-	distanceYSkywalkerKenobi := ySkywalker - yKenobi
-	hipotSkywalkerKenobi := math.Sqrt((distanceYSkywalkerKenobi * distanceYSkywalkerKenobi) + (distanceXSkywalkerKenobi * distanceXSkywalkerKenobi))
-	if hipotSkywalkerKenobi > (distanceKenobi + distanceSkywalker){
-		//No solution
+	var intersectionPointsLineAndCentersLineDisntance, xOffset, yOffset float64
+	var xIntersectionPointsLineAndCentersLine, yIntersectionPointsLineAndCentersLine float64
+
+	xDifferenceKenobiSkywalker := xPositionSkywalker - xPositionKenobi
+	yDifferenceKenobiSkywalker := yPositionSkywalker - yPositionKenobi
+	hKenobiSkywalker := math.Sqrt((yDifferenceKenobiSkywalker * yDifferenceKenobiSkywalker) + (xDifferenceKenobiSkywalker * xDifferenceKenobiSkywalker))
+	if hKenobiSkywalker > (distanceKenobi + distanceSkywalker){
+		//no solution
 		return nil, nil
 	}
 
-	if hipotSkywalkerKenobi < math.Abs(distanceKenobi-distanceSkywalker){
-		//No solution
+	if hKenobiSkywalker < math.Abs(distanceKenobi-distanceSkywalker){
+		// no solution. One circle contained in another
 		return nil, nil
 	}
 
-	distanceToFirstIntersectionPoint := ((distanceKenobi * distanceKenobi) - (distanceSkywalker * distanceSkywalker) +
-		(hipotSkywalkerKenobi * hipotSkywalkerKenobi)) / (2.0 * hipotSkywalkerKenobi)
+	/* intersectionPointsLineAndCentersLine is the point where the line through the circle
+	 * intersection points crosses the line between the circle
+	 * centers.
+	 */
 
-	intersectionPointX := xKenobi + (distanceXSkywalkerKenobi * distanceToFirstIntersectionPoint / hipotSkywalkerKenobi)
-	intersectionPointY := yKenobi + (distanceYSkywalkerKenobi * distanceToFirstIntersectionPoint / hipotSkywalkerKenobi)
+	/* Determine the distance from Kenobi to intersectionPointsLineAndCentersLine. */
+	intersectionPointsLineAndCentersLine := ((distanceKenobi * distanceKenobi) - (distanceSkywalker * distanceSkywalker) + (hKenobiSkywalker * hKenobiSkywalker)) / (2.0 * hKenobiSkywalker)
+
+	/* Determine the coordinates of point 2. */
+	xIntersectionPointsLineAndCentersLine = xPositionKenobi + (xDifferenceKenobiSkywalker * intersectionPointsLineAndCentersLine / hKenobiSkywalker)
+	yIntersectionPointsLineAndCentersLine = yPositionKenobi + (yDifferenceKenobiSkywalker * intersectionPointsLineAndCentersLine / hKenobiSkywalker)
+
+	/* Determine the distance from intersectionPointsLineAndCentersLine to either of the
+	 * intersection points.
+	 */
+	intersectionPointsLineAndCentersLineDisntance = math.Sqrt((distanceKenobi * distanceKenobi) - (intersectionPointsLineAndCentersLine * intersectionPointsLineAndCentersLine))
+
+	/* Determine the offsets of the intersection points from
+	 * intersectionPointsLineAndCentersLine.
+	 */
+	xOffset = -yDifferenceKenobiSkywalker * (intersectionPointsLineAndCentersLineDisntance / hKenobiSkywalker)
+	yOffset = xDifferenceKenobiSkywalker * (intersectionPointsLineAndCentersLineDisntance / hKenobiSkywalker)
+
+	// Determine the absolute intersection points.
+	intersectionPoint1X := xIntersectionPointsLineAndCentersLine + xOffset
+	intersectionPoint2X := xIntersectionPointsLineAndCentersLine - xOffset
+	intersectionPoint1Y := yIntersectionPointsLineAndCentersLine + yOffset
+	intersectionPoint2Y := yIntersectionPointsLineAndCentersLine - yOffset
+
+	//etermine if Sato's circle intersects at either of the above intersection points.
+	xDifferenceKenobiSkywalker = intersectionPoint1X - xPositionSato
+	yDifferenceKenobiSkywalker = intersectionPoint1Y - yPositionSato
+	d1 := math.Sqrt((yDifferenceKenobiSkywalker * yDifferenceKenobiSkywalker) + (xDifferenceKenobiSkywalker * xDifferenceKenobiSkywalker))
+
+	xDifferenceKenobiSkywalker = intersectionPoint2X - xPositionSato
+	yDifferenceKenobiSkywalker = intersectionPoint2Y - yPositionSato
+	d2 := math.Sqrt((yDifferenceKenobiSkywalker * yDifferenceKenobiSkywalker) + (xDifferenceKenobiSkywalker * xDifferenceKenobiSkywalker))
 
 
-	dFromFirstInterPointToOthersInterPoints := math.Sqrt((distanceKenobi * distanceKenobi) - (distanceToFirstIntersectionPoint * distanceToFirstIntersectionPoint))
-
-	intersectionPointCompensationX := -distanceYSkywalkerKenobi * (dFromFirstInterPointToOthersInterPoints / hipotSkywalkerKenobi)
-	intersectionPointCompensationY := distanceXSkywalkerKenobi * (dFromFirstInterPointToOthersInterPoints / hipotSkywalkerKenobi)
-
-	intersectionPoint1X := intersectionPointX + intersectionPointCompensationX
-	intersectionPoint1Y := intersectionPointY + intersectionPointCompensationY
-
-	distanceXSkywalkerKenobi = intersectionPoint1X - xSato
-	distanceYSkywalkerKenobi = intersectionPoint1Y - ySato
-	d1 := math.Sqrt((distanceYSkywalkerKenobi * distanceYSkywalkerKenobi) + (distanceXSkywalkerKenobi * distanceXSkywalkerKenobi))
-
-	if math.Abs(d1 -distanceSato) < EPSILON {
+	if math.Abs(d1 - distanceSato) < EPSILON {
 		x := float32(math.Round(intersectionPoint1X*100) / 100)
 		y := float32(math.Round(intersectionPoint1Y*100) / 100)
-		fmt.Println("Intersection found" + "(" + fmt.Sprintf("%f", math.Round(intersectionPoint1X*100)/100 )  + "," + fmt.Sprintf("%f", math.Round(intersectionPoint1Y*100)/100 )  + ")")
 		return &x, &y
+	}
+	if math.Abs(d2 - distanceSato) < EPSILON {
+
+		x := float32(math.Round(intersectionPoint2X*100) / 100)
+		y := float32(math.Round(intersectionPoint2Y*100) / 100)
+		return &x, &y
+
 	}
 	return nil, nil
 }

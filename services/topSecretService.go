@@ -16,19 +16,24 @@ func(l TopSecretService) ConstructResponse(topSecret models.TopSecret) (*models.
 	distancesArray, error := locationService.GetFloatArrayFromTopSecret(topSecret)
 	if error == nil {
 
-		//Using GoRoutines here is unnecessary, but is fun to use it:
+		//Using GoRoutines here is unnecessary, but is fun:
 		positionChannel := make(chan *models.Position,  2)
 		secretMessageChannel := make(chan string, 1)
 		go func() {
 			x, y := locationService.GetLocation(distancesArray[0], distancesArray[1], distancesArray[2])
-			positionChannel <- &models.Position{X: *x, Y: *y}
+			if y == nil || x == nil{
+				close(positionChannel)
+			}else{
+				positionChannel <- &models.Position{X: *x, Y: *y}
+			}
+
 		}()
 		go func() {
 			secret := messageService.GetMessageFromTopSecret(topSecret)
 			secretMessageChannel <- secret
 		}()
 
-		position := <-positionChannel
+		position := <- positionChannel
 		secret := <- secretMessageChannel
 		if secret != "" && position != nil {
 			secretResponse := models.TopSecretResponse{Position: *position, Message: secret}
