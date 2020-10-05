@@ -31,7 +31,6 @@ func(l TopSecretService) ConstructResponse(topSecret models.TopSecret) (*models.
 		position := <-positionChannel
 		secret := <- secretMessageChannel
 		if secret != "" && position != nil {
-
 			secretResponse := models.TopSecretResponse{Position: *position, Message: secret}
 			return &secretResponse, nil
 		}else{
@@ -46,9 +45,9 @@ func(l TopSecretService) ConstructResponse(topSecret models.TopSecret) (*models.
 
 }
 
-func(l TopSecretService) SaveTopSecretSplitToCache(topSecret *models.TopSecretSplit, name string) (saved bool)  {
-	if topSecret != nil {
-		cache.SetValue(name, topSecret)
+func(l TopSecretService) SaveTopSecretSplitToCache(topSecretSplit *models.TopSecretSplit, name string) (saved bool)  {
+	if topSecretSplit != nil {
+		cache.SetValue(name, topSecretSplit)
 		return true
 	}
 	return false

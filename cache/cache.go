@@ -7,7 +7,7 @@ import (
 var mainCache *cache.Cache
 
 func InitCache(){
-	mainCache = cache.New(30*time.Minute, 60*time.Minute)
+	mainCache = cache.New(8*time.Minute, 10*time.Minute)
 }
 
 func SetValue(key string, value interface{}) {
